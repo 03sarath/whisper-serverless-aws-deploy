@@ -4,14 +4,15 @@ env:
   variables:
     AWS_REGION: "us-east-1"
     ECR_REPO_NAME: "whisper-lambda"
-    LAMBDA_FUNCTION: "whisper-transcribe-dev"
     DOCKERHUB_USERNAME: "03sarath"
+    DEPLOY_ENV: "dev"
 
 phases:
   pre_build:
     commands:
       - export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - export ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$ECR_REPO_NAME:$MODEL_TAG
+      - export LAMBDA_FUNCTION=whisper-transcribe-$DEPLOY_ENV
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
       - aws ecr describe-repositories --repository-names $ECR_REPO_NAME --region $AWS_REGION 2>/dev/null || aws ecr create-repository --repository-name $ECR_REPO_NAME --region $AWS_REGION
 
